@@ -80,6 +80,8 @@ jobs:
           npm install @bowtiedradone/dummy-test-pkg@$VERSION
           cd ..
 
+          git remote -v
+
           git add example/package.json example/package-lock.json
           git commit -m "Update example project to use @bowtiedradone/dummy-test-pkg@$VERSION"
           git push --set-upstream origin "$BRANCH_NAME"
