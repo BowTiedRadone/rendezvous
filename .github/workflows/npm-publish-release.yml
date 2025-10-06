@@ -65,31 +65,23 @@ jobs:
       - name: Update example project to use published version
         run: |
           echo "Updating example project to use version: $VERSION"
-
-          # Configure git.
-          git config user.email "action@github.com"
-          git config user.name "GitHub Action"
-
-          # Create and checkout post-release branch.
-          git checkout -b "$BRANCH_NAME"
-
           # Update example to use the published version.
           cd example
           npm install @bowtiedradone/dummy-test-pkg@$VERSION
           cd ..
 
-          git remote -v
-
-          git add example/package.json example/package-lock.json
-          git commit -m "Update example project to use @bowtiedradone/dummy-test-pkg@$VERSION"
-          git push origin "$BRANCH_NAME"
-
       - name: Create pull request
+        id: cpr
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ env.BRANCH_NAME }}
+          base: master
           title: "Update example project to use @bowtiedradone/dummy-test-pkg@${{ env.VERSION }}"
+          commit-message: "Update example project to use @bowtiedradone/dummy-test-pkg@${{ env.VERSION }}"
+          add-paths: |
+            example/package.json
+            example/package-lock.json
           body: |
             This post-release PR updates the `example` project to use the latest dummy test package version.
 
@@ -97,4 +89,7 @@ jobs:
             - Updates `@bowtiedradone/dummy-test-pkg` dependency to `${{ env.VERSION }}`
 
             Auto-generated after test release ${{ env.VERSION }}.
-          base: master
+      
+      - name: Output PR URL
+        if: steps.cpr.outputs.pull-request-url != ''
+        run: echo "PR: ${{ steps.cpr.outputs.pull-request-url }}"
