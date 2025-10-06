@@ -89,7 +89,3 @@ jobs:
             - Updates `@bowtiedradone/dummy-test-pkg` dependency to `${{ env.VERSION }}`
 
             Auto-generated after test release ${{ env.VERSION }}.
-      
-      - name: Output PR URL
-        if: steps.cpr.outputs['pull-request-url'] != ''
-        run: echo "PR: ${{ steps.cpr.outputs['pull-request-url'] }}"
