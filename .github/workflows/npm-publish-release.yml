@@ -91,5 +91,5 @@ jobs:
             Auto-generated after test release ${{ env.VERSION }}.
       
       - name: Output PR URL
-        if: steps.cpr.outputs.pull-request-url != ''
-        run: echo "PR: ${{ steps.cpr.outputs.pull-request-url }}"
+        if: steps.cpr.outputs['pull-request-url'] != ''
+        run: echo "PR: ${{ steps.cpr.outputs['pull-request-url'] }}"
