@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@bowtiedradone/dummy-test-pkg": "^1.0.3",
     "@hirosystems/clarinet-sdk": "^3.7.0",
     "@stacks/rendezvous": "^0.10.0",
     "@stacks/transactions": "^7.2.0",
