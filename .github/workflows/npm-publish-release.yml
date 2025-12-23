@@ -2,6 +2,12 @@ name: npm-publish
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to test (e.g., 0.13.1)"
+        required: true
+        default: "0.13.1"
 
 permissions:
   id-token: write
@@ -10,6 +16,8 @@ permissions:
 
 jobs:
   publish:
+    # Skip this job for the test workflow. Remove after testing.
+    if: github.event_name == 'release'
     environment: "Publish to NPM"
     runs-on: ubuntu-latest
     steps:
@@ -26,22 +34,33 @@ jobs:
       - run: npm publish
 
   update-example-post-release:
-    needs: publish
+    # The job being tested should run. Normally it requires `publish` to be
+    # successful. Remove after testing.
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'release'
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ github.ref_name }}
+      # The version specified in the workflow dispatch input for testing.
+      # Remove after testing.
+      VERSION: ${{ github.event.inputs.version }}
       BRANCH_NAME: post-release/update-example
     steps:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        # The fix being tested (the failed job reported double authorization).
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
       - name: Wait for npm propagation
+        # Disable the sleep for testing. Remove after testing.
+        if: github.event_name == 'release'
         run: sleep 30
 
       - name: Verify version availability on npm with retries
+        # Disable the retry for testing. Remove after testing.
+        if: github.event_name == 'release'
         run: |
           echo "Checking if @stacks/rendezvous@$VERSION is available on npm..."
 
@@ -61,11 +80,23 @@ jobs:
           done
 
       - name: Update example project to use published version
+        # Disable the update for testing. Remove after testing.
+        if: github.event_name == 'release'
         run: |
           echo "Updating example project to use version: $VERSION"
           # Update example to use the published version.
           cd example
           npm install @stacks/rendezvous@$VERSION
+          cd ..
+
+      - name: Update example project (manual test)
+        # Manual test mode: Make a dummy change to test PR creation. Remove
+        # after testing.
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "Test mode: Making dummy change to test PR creation"
+          cd example
+          echo "// Test change for version $VERSION" >> package.json
           cd ..
 
       - name: Create pull request
